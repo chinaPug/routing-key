@@ -1,15 +1,15 @@
-package cn.pug.common.inboundHandler;
+package cn.pug.server.component.inboundHandler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Dest2ClientInboundHandler extends ChannelInboundHandlerAdapter {
+public class Browser2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
     private final ChannelHandlerContext clientChannelHandlerContext;
 
-    public Dest2ClientInboundHandler(ChannelHandlerContext clientChannelHandlerContext) {
+    public Browser2ServerInboundHandler(ChannelHandlerContext clientChannelHandlerContext) {
         this.clientChannelHandlerContext = clientChannelHandlerContext;
     }
 

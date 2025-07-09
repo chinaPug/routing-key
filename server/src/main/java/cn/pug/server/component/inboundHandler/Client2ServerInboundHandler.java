@@ -1,29 +1,29 @@
-package cn.pug.common.inboundHandler;
+package cn.pug.server.component.inboundHandler;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
-public class Client2DestInboundHandler extends ChannelInboundHandlerAdapter {
+public class Client2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
-    private final ChannelFuture dstChannelFuture;
+    private final ChannelHandlerContext toClientChannel;
 
-    public Client2DestInboundHandler(ChannelFuture dstChannelFuture) {
-        this.dstChannelFuture = dstChannelFuture;
+    public Client2ServerInboundHandler(ChannelHandlerContext toClientChannel) {
+        this.toClientChannel = toClientChannel;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        dstChannelFuture.channel().writeAndFlush(msg);
+        toClientChannel.writeAndFlush(msg);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 //        log.trace("客户端与代理服务器的连接已经断开，即将断开代理服务器和目标服务器的连接");
-        dstChannelFuture.channel().close();
+        toClientChannel.close();
     }
 
     @Override
