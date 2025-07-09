@@ -23,22 +23,30 @@ public class Wait extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         log.info(msg);
-        ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg);
-        if (toBrowserCtx==null){
-            log.error("没有找到对应的浏览器通道");
+        if (msg.contains("-false")){
+            log.error("连接失败");
+            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg.replace("-false",""));
+
+            //转发失败
+            DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, socks5.des2toSocks5AddressTypeMap.get(msg.replace("-false","")));
+            toBrowserCtx.writeAndFlush(commandResponse);
         }else {
+            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg);
             ctx.pipeline().remove(DelimiterBasedFrameDecoder.class);
             ctx.pipeline().remove(StringDecoder.class);
             ctx.pipeline().remove(StringEncoder.class);
             ctx.pipeline().remove(this);
-            ctx.pipeline().addLast(new Browser2ServerInboundHandler(ctx))
+            toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(ctx))
                     .addLast(new Client2ServerInboundHandler(toBrowserCtx));
             log.info("成功建立浏览器和代理服务器之间的通道");
             //转发成功
             DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5.des2toSocks5AddressTypeMap.get(msg));
+            log.error("current handler:{}",toBrowserCtx.channel().pipeline().channel());
+            toBrowserCtx.channel().pipeline().names().forEach(name -> log.error("name:{}",name));
             toBrowserCtx.writeAndFlush(commandResponse);
+            toBrowserCtx.pipeline().remove(Socks5CommandRequestInboundHandler.class);
             toBrowserCtx.pipeline().remove(Socks5CommandRequestDecoder.class);
         }
     }

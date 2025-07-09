@@ -17,13 +17,14 @@ public class Client2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        log.info("开始写客户端");
         toClientChannel.writeAndFlush(msg);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-//        log.trace("客户端与代理服务器的连接已经断开，即将断开代理服务器和目标服务器的连接");
-        toClientChannel.close();
+        log.trace("客户端与代理服务器的连接已经断开，即将断开代理服务器和目标服务器的连接");
+        toClientChannel.channel().close();
     }
 
     @Override

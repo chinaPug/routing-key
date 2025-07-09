@@ -36,24 +36,29 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
             // 尝试连接目标服务器
             log.info("目标服务器连接中【{}】", desHostIp+"-"+desPort);
             bootstrap.connect(desHostIp, desPort).addListener((ChannelFutureListener) future0 -> {
+                String response;
                 if (future0.isSuccess()) {
+                    response = desMsg + "\r\n";
                     log.info("目标服务器连接成功");
-                    bootstrap.connect(hostIp, proxyPort).addListener((ChannelFutureListener) future1 -> {
-                        if (future1.isSuccess()) {
-                            log.info("代理服务连接成功");
-                            Channel toDes = future0.channel();
-                            Channel toServer = future1.channel();
-                            toDes.pipeline()
-                                    .addLast(new Des2ClientInboundHandler(toServer))
-                                    .addLast(new Client2DesInboundHandler(toDes));
-                            log.info("双向连接建立");
-                            toServer.writeAndFlush(desMsg + "\r\n");
-                            toDes.pipeline().remove(StringEncoder.class);
-
-                        }
-                    });
-
+                }else {
+                    response = desMsg +"-false\r\n";
+                    log.info("请求被拒绝");
                 }
+
+                bootstrap.connect(hostIp, proxyPort).addListener((ChannelFutureListener) future1 -> {
+                    if (future1.isSuccess()) {
+                        log.info("代理服务连接成功");
+                        Channel toDes = future0.channel();
+                        Channel toServer = future1.channel();
+                        toServer.pipeline()
+                                .addLast(new Des2ClientInboundHandler(toServer))
+                                .addLast(new Client2DesInboundHandler(toDes));
+                        log.info("双向连接建立");
+                        toServer.writeAndFlush(response);
+                        toDes.pipeline().remove(StringEncoder.class);
+
+                    }
+                });
             });
            
         }else {

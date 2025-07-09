@@ -50,9 +50,12 @@ public class Socks5 {
                         protected void initChannel(SocketChannel ch) {
                             // 添加Socks协议解码编码器
                             ch.pipeline()
+                                    // 添加Socks5编码器
                                     .addLast(Socks5ServerEncoder.DEFAULT)
+                                    // 处理Socks5初始化请求
                                     .addLast(new Socks5InitialRequestDecoder())
                                     .addLast(new Socks5InitialRequestInboundHandler())
+                                    // 处理连接请求
                                     .addLast(new Socks5CommandRequestDecoder())
                                     .addLast(new Socks5CommandRequestInboundHandler(Socks5.this));
                         }

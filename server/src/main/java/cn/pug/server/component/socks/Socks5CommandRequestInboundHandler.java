@@ -74,8 +74,6 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
                         socks5.getToClientDaemonChannel().writeAndFlush(msg.dstAddr() + "-" + msg.dstPort() + "-" + availablePort + "\r\n").addListener(future1 -> {
                             if (future1.isSuccess()) {
                                 log.info("已成功向客户端发送代理转发请求");
-                                // 移除不再需要的处理器，处理socks握手请求的处理器需要移除
-                                toBrowserCtx.pipeline().remove(Socks5ServerEncoder.DEFAULT);
                                 // 等待客户端回传与目标服务器连接成功的信息
                                 socks5.des2toBrowserCtxMap.put(msg.dstAddr() + "-" + msg.dstPort() + "-" + availablePort, toBrowserCtx);
                                 // 获取SOCKS5命令请求的目的地址类型
@@ -96,12 +94,3 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
         log.error("xxxx", cause);
     }
 }
-
-/**
- * 成功创建 Socks5 代理
- * DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5AddressType);
- * toBrowserCtx.writeAndFlush(commandResponse);
- * 失败 创建 Socks5 代理
- * DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, socks5AddressType);
- * toBrowserCtx.writeAndFlush(commandResponse);
- */
