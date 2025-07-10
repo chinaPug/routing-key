@@ -2,8 +2,6 @@ package cn.pug.server.component;
 
 import cn.pug.server.component.daemon.Daemon;
 import cn.pug.server.component.socks.Socks5;
-import com.google.common.collect.HashBiMap;
-import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;

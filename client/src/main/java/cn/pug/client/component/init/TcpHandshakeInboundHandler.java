@@ -1,9 +1,9 @@
 package cn.pug.client.component.init;
 
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Objects;
 
 @Slf4j
 public class TcpHandshakeInboundHandler extends SimpleChannelInboundHandler<String> {

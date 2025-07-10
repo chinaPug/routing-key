@@ -4,9 +4,7 @@ import cn.pug.client.component.inboundHandler.Client2DesInboundHandler;
 import cn.pug.client.component.inboundHandler.Des2ClientInboundHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 
