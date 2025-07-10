@@ -2,7 +2,6 @@ package cn.pug.server.component.socks;
 
 import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.common.utils.NetUtil;
 import cn.pug.server.component.ServerContext;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -73,7 +72,7 @@ public class Socks5 {
                             // 在上下文中注册该代理
                             ServerContext.getInstance().registrySocksProxy(this.browserProxyPort, this);
                             // 获取browser proxy服务端坐标发送给客户端
-                            String localAddress = NetUtil.getLocalIP();
+                            String localAddress = ServerContext.getInstance().getIp();
                             String proxyInfo = localAddress + RoutingKeyProtocol.SEGMENT_SPLIT + this.browserProxyPort + "\r\n";
                             log.info("browser proxy服务端启动成功，下一步发送元数据【{}】到客户端", proxyInfo);
                             this.toClientDaemonChannel.writeAndFlush(proxyInfo);

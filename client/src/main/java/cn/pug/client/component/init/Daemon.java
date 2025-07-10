@@ -1,7 +1,6 @@
 package cn.pug.client.component.init;
 
 import cn.pug.common.handler.ExceptionHandler;
-import cn.pug.common.utils.NetUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -21,11 +20,13 @@ public class Daemon {
     private EventLoopGroup proxyGroup = new NioEventLoopGroup();
     private Bootstrap bootstrap = new Bootstrap();
     private String ServerIp;
+    private String ip;
     private final int ServerDaemonPort;
 
-    public Daemon(String ServerIp, int ServerDaemonPort) {
+    public Daemon(String ServerIp, int ServerDaemonPort,String ip) {
         this.ServerIp = ServerIp;
         this.ServerDaemonPort = ServerDaemonPort;
+        this.ip=ip;
     }
 
     public void start() {
@@ -48,7 +49,7 @@ public class Daemon {
             // todo copy
             Channel channel = this.bootstrap.connect(this.ServerIp, this.ServerDaemonPort).sync().channel();
             // 发送注册信息
-            channel.writeAndFlush(NetUtil.getLocalIP()+"\r\n").addListener(
+            channel.writeAndFlush(ip+"\r\n").addListener(
                     future -> {
                         if (future.isSuccess()) {
                             log.info("注册服务成功!");

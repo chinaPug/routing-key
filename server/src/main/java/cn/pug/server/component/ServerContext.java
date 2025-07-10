@@ -13,13 +13,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServerContext {
     // 单例，一个服务中仅可存在一个ServerContext实例
     private static ServerContext instance;
+    private String ip;
     // 守护进程
     private final Daemon daemon;
     // 端口与socks5实例的映射
     private final Map<Integer, Socks5> port2SocksProxy = new ConcurrentHashMap<>(64);
 
     // 构造函数：传入守护进程的port
-    public ServerContext(int port) {
+    public ServerContext(String ip,int port) {
+        this.ip= ip;
         daemon = new Daemon(port);
         if (ServerContext.instance != null) {
             log.error("ServerContext实例已存在，服务中仅可存在一个ServerContext实例！");
@@ -52,5 +54,9 @@ public class ServerContext {
         for (Socks5 socks5 : port2SocksProxy.values()) {
             socks5.shutdownGracefully();
         }
+    }
+
+    public String getIp() {
+        return ip;
     }
 }

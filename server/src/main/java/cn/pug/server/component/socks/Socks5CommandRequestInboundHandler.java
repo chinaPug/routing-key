@@ -1,7 +1,6 @@
 package cn.pug.server.component.socks;
 
 import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.common.utils.NetUtil;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
