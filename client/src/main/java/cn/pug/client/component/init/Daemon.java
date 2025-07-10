@@ -1,11 +1,12 @@
 package cn.pug.client.component.init;
 
+import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.utils.NetUtil;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
@@ -40,7 +41,8 @@ public class Daemon {
                                     .addLast(new StringDecoder())
                                     .addLast(new StringEncoder())
                                     // 发送注册服务报文
-                                    .addLast(new TcpHandshakeInboundHandler(proxyGroup,ServerIp));
+                                    .addLast(new TcpHandshakeInboundHandler(proxyGroup,ServerIp))
+                                    .addLast(new ExceptionHandler());
                         }
                     });
             // todo copy

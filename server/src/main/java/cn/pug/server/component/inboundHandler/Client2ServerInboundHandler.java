@@ -1,5 +1,7 @@
 package cn.pug.server.component.inboundHandler;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +17,7 @@ public class Client2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info("开始写客户端");
+        log.info("开始写客户端:{}",ctx);
         toClientChannel.writeAndFlush(msg);
     }
 

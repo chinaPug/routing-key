@@ -1,5 +1,6 @@
 package cn.pug.server.component.socks;
 
+import cn.pug.common.protocol.RoutingKeyProtocol;
 import cn.pug.server.component.inboundHandler.Browser2ServerInboundHandler;
 import cn.pug.server.component.inboundHandler.Client2ServerInboundHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -23,15 +24,16 @@ public class Wait extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         log.info(msg);
-        if (msg.contains("-false")){
+        if (msg.contains(RoutingKeyProtocol.SEGMENT_SPLIT+"false")){
             log.error("连接失败");
-            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg.replace("-false",""));
+            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg.replace(RoutingKeyProtocol.SEGMENT_SPLIT+"false",""));
 
-            //转发失败
-            DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, socks5.des2toSocks5AddressTypeMap.get(msg.replace("-false","")));
+            // todo 换成remove不知道可不可以
+            DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, socks5.des2toSocks5AddressTypeMap.remove(msg.replace(RoutingKeyProtocol.SEGMENT_SPLIT+"false","")));
             toBrowserCtx.writeAndFlush(commandResponse);
         }else {
-            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.get(msg);
+            // todo 换成remove不知道可不可以
+            ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.remove(msg);
             ctx.pipeline().remove(DelimiterBasedFrameDecoder.class);
             ctx.pipeline().remove(StringDecoder.class);
             ctx.pipeline().remove(StringEncoder.class);
@@ -40,12 +42,14 @@ public class Wait extends SimpleChannelInboundHandler<String> {
             toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(ctx));
             log.info("成功建立浏览器和代理服务器之间的通道");
             //转发成功
-            DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5.des2toSocks5AddressTypeMap.get(msg));
-            log.error("current handler:{}",toBrowserCtx.channel().pipeline().channel());
-            toBrowserCtx.channel().pipeline().names().forEach(name -> log.error("name:{}",name));
+            // todo 换成remove不知道可不可以
+            DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5.des2toSocks5AddressTypeMap.remove(msg));
             toBrowserCtx.writeAndFlush(commandResponse);
-            toBrowserCtx.pipeline().remove(Socks5CommandRequestInboundHandler.class);
-            toBrowserCtx.pipeline().remove(Socks5CommandRequestDecoder.class);
+            if (toBrowserCtx.pipeline().get(Socks5CommandRequestInboundHandler.class) != null)
+                toBrowserCtx.pipeline().remove(Socks5CommandRequestInboundHandler.class);
+            if (toBrowserCtx.pipeline().get(Socks5CommandRequestDecoder.class) != null)
+                toBrowserCtx.pipeline().remove(Socks5CommandRequestDecoder.class);
         }
     }
+
 }

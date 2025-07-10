@@ -1,6 +1,6 @@
 package cn.pug.client.component.init;
 
-import io.netty.channel.ChannelHandlerContext;
+import cn.pug.common.handler.ExceptionHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.string.StringEncoder;
@@ -11,11 +11,8 @@ public class DaemonChannelInitializer extends ChannelInitializer<SocketChannel> 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ch.pipeline()
-                .addLast(new StringEncoder());
+                .addLast(new StringEncoder())
+                .addLast(new ExceptionHandler());
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("报错啦", cause);
-    }
 }

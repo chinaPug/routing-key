@@ -1,11 +1,9 @@
 package cn.pug.server.component.socks;
 
+import cn.pug.common.protocol.RoutingKeyProtocol;
 import cn.pug.common.utils.NetUtil;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -19,16 +17,14 @@ import io.netty.util.ReferenceCountUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.stream.IntStream;
 
 
 @Slf4j
 public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
 
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
-    private EventLoopGroup bossGroup = new NioEventLoopGroup();
     private Socks5 socks5;
-
 
     public Socks5CommandRequestInboundHandler(Socks5 socks5) {
         this.socks5 = socks5;
@@ -50,11 +46,8 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
         log.debug("准备连接目标服务器，ip={},port={}", msg.dstAddr(), msg.dstPort());
         // 发送这个当前浏览器的请求报文到tcp服务器
         //启动监听
-        int availablePort = IntStream.rangeClosed(9000, 10000)
-                .filter(NetUtil::isPortCanUse)
-                .findFirst().orElse(-1);
-        ServerBootstrap clientProxyServerBootstrap = new ServerBootstrap()
-                .group(this.bossGroup, this.workerGroup)
+        new ServerBootstrap()
+                .group( new NioEventLoopGroup(2))
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -65,19 +58,18 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
                                 .addLast(new StringEncoder())
                                 .addLast(new Wait(socks5));
                     }
-                });
-
-        clientProxyServerBootstrap.bind(availablePort)
-                .addListener(future0 -> {
+                }).bind(0)
+                .addListener((ChannelFutureListener)future0 -> {
                     if (future0.isSuccess()) {
                         // 通过与客户端daemon的tcp通道发送连接请求，有浏览器请求代理的目标地址和本次需要客户端主动连接的端口
-                        socks5.getToClientDaemonChannel().writeAndFlush(msg.dstAddr() + "-" + msg.dstPort() + "-" + availablePort + "\r\n").addListener(future1 -> {
+                        int port = ((InetSocketAddress) future0.channel().localAddress()).getPort();
+                        socks5.getToClientDaemonChannel().writeAndFlush(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port + "\r\n").addListener(future1 -> {
                             if (future1.isSuccess()) {
                                 log.info("已成功向客户端发送代理转发请求");
                                 // 等待客户端回传与目标服务器连接成功的信息
-                                socks5.des2toBrowserCtxMap.put(msg.dstAddr() + "-" + msg.dstPort() + "-" + availablePort, toBrowserCtx);
-                                // 获取SOCKS5命令请求的目的地址类型
-                                socks5.des2toSocks5AddressTypeMap.put(msg.dstAddr() + "-" + msg.dstPort() + "-" + availablePort, msg.dstAddrType());
+                                socks5.des2toBrowserCtxMap.put(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port, toBrowserCtx);
+                                // 放入SOCKS5命令请求的目的地址类型
+                                socks5.des2toSocks5AddressTypeMap.put(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port, msg.dstAddrType());
                             } else {
                                 log.error("连接目标服务器失败,address={},port={}", msg.dstAddr(), msg.dstPort());
                             }

@@ -12,27 +12,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 public class NetUtil {
-    public static Lock lock = new ReentrantLock();
-    public static Set<Integer> IusePortSet = new HashSet<>();
-    public static boolean isPortCanUse(int port){
-        lock.lock();
-        try {
-            try (ServerSocket serverSocket = new ServerSocket(port)){
-                log.info("端口【{}】可用",port);
-                if (!IusePortSet.contains( port)) {
-                    IusePortSet.add(port);
-                    return true;
-                }else {
-                    return false;
-                }
-            } catch (Exception e) {
-                log.info("端口【{}】不可用",port);
-                return false;
-            }
-        }finally {
-            lock.unlock();
+
+    public static int findAvailablePort() {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        } catch (Exception e) {
+            throw new RuntimeException("无法找到可用端口", e);
         }
     }
+
 
     /**
      * 获取本机IP地址

@@ -2,6 +2,8 @@ package cn.pug.client.component.init;
 
 import cn.pug.client.component.inboundHandler.Client2DesInboundHandler;
 import cn.pug.client.component.inboundHandler.Des2ClientInboundHandler;
+import cn.pug.common.handler.ExceptionHandler;
+import cn.pug.common.protocol.RoutingKeyProtocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -20,7 +22,7 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
     @Override
     protected void channelRead0(ChannelHandlerContext toServerDaemonCtx, String desMsg) throws Exception {
         log.info("收到服务端发送的请求帮浏览器转发信息：{}", desMsg);
-        String[] desMsgArray = desMsg.split("-");
+        String[] desMsgArray = desMsg.split(RoutingKeyProtocol.SEGMENT_SPLIT);
         if (desMsgArray.length==3){
             //创建一个客户端
             Bootstrap bootstrap = new Bootstrap()
@@ -32,15 +34,15 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
             int desPort = Integer.parseInt(desMsgArray[1]);
             int proxyPort=Integer.parseInt(desMsgArray[2]);;
             // 尝试连接目标服务器
-            log.info("目标服务器连接中【{}】", desHostIp+"-"+desPort);
+            log.info("目标服务器连接中【{}】", desHostIp+ RoutingKeyProtocol.SEGMENT_SPLIT +desPort);
             bootstrap.connect(desHostIp, desPort).addListener((ChannelFutureListener) future0 -> {
                 String response;
                 if (future0.isSuccess()) {
                     response = desMsg + "\r\n";
-                    log.info("目标服务器连接成功");
+                    log.info("目标服务器连接成功:{}",desMsg);
                 }else {
-                    response = desMsg +"-false\r\n";
-                    log.info("请求被拒绝");
+                    response = desMsg + RoutingKeyProtocol.SEGMENT_SPLIT +"false\r\n";
+                    log.info("请求被拒绝:{}",desMsg);
                 }
 
                 bootstrap.connect(hostIp, proxyPort).addListener((ChannelFutureListener) future1 -> {
@@ -49,13 +51,15 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
                         Channel toDes = future0.channel();
                         Channel toServer = future1.channel();
                         toServer.pipeline()
-                                .addLast(new Client2DesInboundHandler(toDes));
+                                .addLast(new Client2DesInboundHandler(toDes))
+                                .addLast(new ExceptionHandler());
                         toDes.pipeline()
-                                .addLast(new Des2ClientInboundHandler(toServer));
+                                .addLast(new Des2ClientInboundHandler(toServer))
+                                .addLast(new ExceptionHandler());
                         log.info("双向连接建立");
                         toServer.writeAndFlush(response);
-                        toDes.pipeline().remove(StringEncoder.class);
-
+                        if (toDes.pipeline().get(StringEncoder.class) != null)
+                            toDes.pipeline().remove(StringEncoder.class);
                     }
                 });
             });
