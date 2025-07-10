@@ -9,8 +9,8 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <modules>
-        <module>client</module>
-        <module>server</module>
+        <module>proxy-unit</module>
+        <module>proxy-pool</module>
         <module>common</module>
     </modules>
 
