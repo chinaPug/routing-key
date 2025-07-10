@@ -1,18 +1,18 @@
 package cn.pug.server.component.socks;
 
 import cn.pug.common.utils.NetUtil;
-import cn.pug.server.component.ServerContext;
-import cn.pug.server.component.inboundHandler.Browser2ServerInboundHandler;
-import cn.pug.server.component.inboundHandler.Client2ServerInboundHandler;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.socksx.v5.*;
+import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
+import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.ReferenceCountUtil;

@@ -51,8 +51,9 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
                         Channel toDes = future0.channel();
                         Channel toServer = future1.channel();
                         toServer.pipeline()
-                                .addLast(new Des2ClientInboundHandler(toServer))
                                 .addLast(new Client2DesInboundHandler(toDes));
+                        toDes.pipeline()
+                                .addLast(new Des2ClientInboundHandler(toServer));
                         log.info("双向连接建立");
                         toServer.writeAndFlush(response);
                         toDes.pipeline().remove(StringEncoder.class);

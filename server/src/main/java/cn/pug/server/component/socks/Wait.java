@@ -38,8 +38,8 @@ public class Wait extends SimpleChannelInboundHandler<String> {
             ctx.pipeline().remove(StringDecoder.class);
             ctx.pipeline().remove(StringEncoder.class);
             ctx.pipeline().remove(this);
-            toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(ctx))
-                    .addLast(new Client2ServerInboundHandler(toBrowserCtx));
+            ctx.pipeline().addLast(new Client2ServerInboundHandler(toBrowserCtx));
+            toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(ctx));
             log.info("成功建立浏览器和代理服务器之间的通道");
             //转发成功
             DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5.des2toSocks5AddressTypeMap.get(msg));
