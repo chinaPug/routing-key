@@ -13,10 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> {
     private EventLoopGroup proxyGroup;
-    private String hostIp;
-    public TcpProxyInboundHandler(EventLoopGroup proxyGroup, String hostIp) {
+    private UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
+
+    public TcpProxyInboundHandler(EventLoopGroup proxyGroup) {
         this.proxyGroup = proxyGroup;
-        this.hostIp = hostIp;
     }
 
     @Override
@@ -45,21 +45,21 @@ public class TcpProxyInboundHandler extends SimpleChannelInboundHandler<String> 
                     log.info("请求被拒绝:{}",desMsg);
                 }
 
-                bootstrap.connect(hostIp, proxyPort).addListener((ChannelFutureListener) future1 -> {
+                bootstrap.connect(unitConfig.proxyConfig.ip, proxyPort).addListener((ChannelFutureListener) future1 -> {
                     if (future1.isSuccess()) {
                         log.info("代理服务连接成功");
-                        Channel toDes = future0.channel();
-                        Channel toServer = future1.channel();
-                        toServer.pipeline()
-                                .addLast(new Client2DesInboundHandler(toDes))
+                        Channel toDesChannel = future0.channel();
+                        Channel toServerChannel = future1.channel();
+                        toServerChannel.pipeline()
+                                .addLast(new Client2DesInboundHandler(toDesChannel))
                                 .addLast(new ExceptionHandler());
-                        toDes.pipeline()
-                                .addLast(new Des2ClientInboundHandler(toServer))
+                        toDesChannel.pipeline()
+                                .addLast(new Des2ClientInboundHandler(toServerChannel))
                                 .addLast(new ExceptionHandler());
                         log.info("双向连接建立");
-                        toServer.writeAndFlush(response);
-                        if (toDes.pipeline().get(StringEncoder.class) != null)
-                            toDes.pipeline().remove(StringEncoder.class);
+                        toServerChannel.writeAndFlush(response);
+                        if (toDesChannel.pipeline().get(StringEncoder.class) != null)
+                            toDesChannel.pipeline().remove(StringEncoder.class);
                     }
                 });
             });

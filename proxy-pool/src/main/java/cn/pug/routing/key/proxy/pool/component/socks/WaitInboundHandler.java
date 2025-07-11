@@ -1,8 +1,8 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
 import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.routing.key.proxy.pool.component.inboundHandler.Browser2ServerInboundHandler;
-import cn.pug.routing.key.proxy.pool.component.inboundHandler.Client2ServerInboundHandler;
+import cn.pug.routing.key.proxy.pool.component.socks.inboundHandler.Browser2ServerInboundHandler;
+import cn.pug.routing.key.proxy.pool.component.socks.inboundHandler.Client2ServerInboundHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
@@ -14,15 +14,16 @@ import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Wait extends SimpleChannelInboundHandler<String> {
+public class WaitInboundHandler extends SimpleChannelInboundHandler<String> {
 
     private Socks5 socks5;
-    public Wait(Socks5 socks5) {
+    
+    public WaitInboundHandler(Socks5 socks5) {
         this.socks5 = socks5;
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) {
+    protected void channelRead0(ChannelHandlerContext toClientCtx, String msg) {
         log.info(msg);
         if (msg.contains(RoutingKeyProtocol.SEGMENT_SPLIT+"false")){
             log.error("连接失败");
@@ -32,12 +33,12 @@ public class Wait extends SimpleChannelInboundHandler<String> {
             toBrowserCtx.writeAndFlush(commandResponse);
         }else {
             ChannelHandlerContext toBrowserCtx = socks5.des2toBrowserCtxMap.remove(msg);
-            ctx.pipeline().remove(DelimiterBasedFrameDecoder.class);
-            ctx.pipeline().remove(StringDecoder.class);
-            ctx.pipeline().remove(StringEncoder.class);
-            ctx.pipeline().remove(this);
-            ctx.pipeline().addLast(new Client2ServerInboundHandler(toBrowserCtx));
-            toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(ctx));
+            toClientCtx.pipeline().remove(DelimiterBasedFrameDecoder.class);
+            toClientCtx.pipeline().remove(StringDecoder.class);
+            toClientCtx.pipeline().remove(StringEncoder.class);
+            toClientCtx.pipeline().remove(this);
+            toClientCtx.pipeline().addLast(new Client2ServerInboundHandler(toBrowserCtx));
+            toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(toClientCtx));
             log.info("成功建立浏览器和代理服务器之间的通道");
             //转发成功
             DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socks5.des2toSocks5AddressTypeMap.remove(msg));

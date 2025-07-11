@@ -1,4 +1,4 @@
-package cn.pug.routing.key.proxy.pool.component.inboundHandler;
+package cn.pug.routing.key.proxy.pool.component.socks.inboundHandler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -9,22 +9,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Client2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
-    private final ChannelHandlerContext toClientChannel;
+    private final ChannelHandlerContext toBrowserCtx;
 
-    public Client2ServerInboundHandler(ChannelHandlerContext toClientChannel) {
-        this.toClientChannel = toClientChannel;
+    public Client2ServerInboundHandler(ChannelHandlerContext toBrowserCtx) {
+        this.toBrowserCtx = toBrowserCtx;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         log.info("开始写客户端:{}",ctx);
-        toClientChannel.writeAndFlush(msg);
+        toBrowserCtx.writeAndFlush(msg);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.trace("客户端与代理服务器的连接已经断开，即将断开代理服务器和目标服务器的连接");
-        toClientChannel.channel().close();
+        toBrowserCtx.channel().close();
     }
 
     @Override

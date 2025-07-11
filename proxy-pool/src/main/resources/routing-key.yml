@@ -1,0 +1,8 @@
+proxy:
+  ip: localhost
+  port: 8080
+
+servlet:
+  port: 8085
+  path: available
+

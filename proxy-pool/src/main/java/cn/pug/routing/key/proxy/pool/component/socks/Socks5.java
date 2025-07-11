@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Data
 public class Socks5 {
+    private ServerContext serverContext = ServerContext.ServerContextHolder.INSTANCE.getServerContext();
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ServerBootstrap browserProxyServerBootstrap;
@@ -63,24 +64,32 @@ public class Socks5 {
                                     .addLast(new ExceptionHandler());
                         }
                     }).bind(0).sync()
-                    .addListener((ChannelFutureListener) future -> {
+                    .addListener((ChannelFutureListener) future0 -> {
                         // browser proxy服务端启动成功
-                        if (future.isSuccess()) {
+                        if (future0.isSuccess()) {
                             // 获取端口号
-                            this.browserProxyPort = ((InetSocketAddress) future.channel().localAddress()).getPort();
+                            this.browserProxyPort = ((InetSocketAddress) future0.channel().localAddress()).getPort();
                             log.info("Socks5代理服务启动成功，监听端口【{}】", this.browserProxyPort);
-                            // 在上下文中注册该代理
-                            ServerContext.getInstance().registrySocksProxy(this.browserProxyPort, this);
                             // 获取browser proxy服务端坐标发送给客户端
-                            String localAddress = ServerContext.getInstance().getIp();
+                            String localAddress = serverContext.getIp();
                             String proxyInfo = localAddress + RoutingKeyProtocol.SEGMENT_SPLIT + this.browserProxyPort + "\r\n";
                             log.info("browser proxy服务端启动成功，下一步发送元数据【{}】到客户端", proxyInfo);
-                            this.toClientDaemonChannel.writeAndFlush(proxyInfo);
+                            this.toClientDaemonChannel.writeAndFlush(proxyInfo).addListener((ChannelFutureListener) future1 -> {
+                                if (future1.isSuccess()){
+                                    // 在上下文中注册该代理
+                                    serverContext.registrySocksProxy(this.browserProxyPort, this);
+                                }else {
+                                    // 说明此时与客户端的通道已经关闭，需要销毁该Socks对象
+                                    log.error("向客户端发送元数据失败，销毁该通道");
+                                    future1.channel().close().sync();
+                                    this.shutdownGracefully();
+                                }
+                            });
                         } else {
                             log.error("Socks5代理服务启动失败");
                             this.shutdownGracefully();
                         }
-                    }).channel().closeFuture().addListener(future -> {
+                    }).channel().closeFuture().addListener(future0 -> {
                         log.info("Socks5代理服务正在关闭");
                         this.shutdownGracefully();
 
@@ -95,7 +104,7 @@ public class Socks5 {
     public void shutdownGracefully() {
         // 关闭线程组
         log.info("正在停止代理服务...");
-        ServerContext.getInstance().removeSocksProxy(this.browserProxyPort);
+        serverContext.removeSocksProxy(this.browserProxyPort);
         this.bossGroup.shutdownGracefully();
         this.workerGroup.shutdownGracefully();
     }

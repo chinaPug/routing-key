@@ -37,7 +37,8 @@ public class Daemon {
                         } else {
                             log.error("代理守护服务启动失败，端口【{}】绑定异常", this.port, future.cause());
                         }
-                    }).channel().closeFuture().sync().addListener(future -> {
+                    }).channel()
+                    .closeFuture().sync().addListener(future -> {
                         log.info("代理守护服务正在关闭");
                         this.shutdownGracefully();
                     });
@@ -52,8 +53,7 @@ public class Daemon {
     public void shutdownGracefully() {
         this.bossGroup.shutdownGracefully();
         this.workerGroup.shutdownGracefully();
-        // 守护进程停止要调用整个上下文的socks服务销毁
-        ServerContext.getInstance().shutdownGracefully();
+        // todo 守护进程要是挂了得做一些措施
         log.info("代理守护服务停止");
     }
 }

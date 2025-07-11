@@ -8,10 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TcpHandshakeInboundHandler extends SimpleChannelInboundHandler<String> {
     private EventLoopGroup proxyGroup;
-    private String ServerIp;
-    public TcpHandshakeInboundHandler(EventLoopGroup proxyGroup, String ServerIp) {
+    public TcpHandshakeInboundHandler(EventLoopGroup proxyGroup) {
         this.proxyGroup=proxyGroup;
-        this.ServerIp=ServerIp;
     }
 
     @Override
@@ -22,7 +20,7 @@ public class TcpHandshakeInboundHandler extends SimpleChannelInboundHandler<Stri
             log.info("代理连接成功:【{}】",socks5ServerMetadata);
             ctx.pipeline().remove(this);
             ctx.pipeline()
-                    .addLast(new TcpProxyInboundHandler(proxyGroup, ServerIp))
+                    .addLast(new TcpProxyInboundHandler(proxyGroup))
                     .addLast(new ExceptionHandler());
         }else {
             log.error("代理连接失败，无效报文【{}】",socks5ServerMetadata);

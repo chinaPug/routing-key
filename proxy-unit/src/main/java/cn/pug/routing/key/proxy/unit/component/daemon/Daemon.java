@@ -19,14 +19,10 @@ public class Daemon {
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
     private EventLoopGroup proxyGroup = new NioEventLoopGroup();
     private Bootstrap bootstrap = new Bootstrap();
-    private String ServerIp;
-    private String ip;
-    private final int ServerDaemonPort;
+    private UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
 
-    public Daemon(String ServerIp, int ServerDaemonPort,String ip) {
-        this.ServerIp = ServerIp;
-        this.ServerDaemonPort = ServerDaemonPort;
-        this.ip=ip;
+    public Daemon() {
+
     }
 
     public void start() {
@@ -42,14 +38,13 @@ public class Daemon {
                                     .addLast(new StringDecoder())
                                     .addLast(new StringEncoder())
                                     // 发送注册服务报文
-                                    .addLast(new TcpHandshakeInboundHandler(proxyGroup,ServerIp))
+                                    .addLast(new TcpHandshakeInboundHandler(proxyGroup))
                                     .addLast(new ExceptionHandler());
                         }
                     });
-            // todo copy
-            Channel channel = this.bootstrap.connect(this.ServerIp, this.ServerDaemonPort).sync().channel();
+            Channel channel = this.bootstrap.connect(unitConfig.proxyConfig.ip, unitConfig.proxyConfig.port).sync().channel();
             // 发送注册信息
-            channel.writeAndFlush(ip+"\r\n").addListener(
+            channel.writeAndFlush(unitConfig.hostname+"\r\n").addListener(
                     future -> {
                         if (future.isSuccess()) {
                             log.info("注册服务成功!");

@@ -1,5 +1,6 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
+import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RoutingKeyProtocol;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -21,7 +22,7 @@ import java.net.InetSocketAddress;
 
 @Slf4j
 public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHandler<DefaultSocks5CommandRequest> {
-
+    // 该channel所属的socks5服务
     private Socks5 socks5;
 
     public Socks5CommandRequestInboundHandler(Socks5 socks5) {
@@ -54,7 +55,8 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
                                 .addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()))
                                 .addLast(new StringDecoder())
                                 .addLast(new StringEncoder())
-                                .addLast(new Wait(socks5));
+                                .addLast(new WaitInboundHandler(socks5))
+                                .addLast(new ExceptionHandler());
                     }
                 }).bind(0)
                 .addListener((ChannelFutureListener)future0 -> {
@@ -79,8 +81,4 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
         log.info("client proxy启动成功");
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.error("xxxx", cause);
-    }
 }
