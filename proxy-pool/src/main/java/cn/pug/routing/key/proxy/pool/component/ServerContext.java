@@ -91,12 +91,6 @@ public class ServerContext {
         }
     }
 
-    // 获取本机ip
-    public String getIp() {
-        return poolConfig.ip;
-    }
-
-
     public enum ServerContextHolder {
         INSTANCE;
         private ServerContext serverContext;
