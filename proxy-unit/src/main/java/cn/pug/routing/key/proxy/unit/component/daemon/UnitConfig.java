@@ -12,10 +12,10 @@ public class UnitConfig {
         Yaml yaml = new Yaml();
         try (InputStream in = UnitConfig.class.getResourceAsStream("/routing-key.yml")) {
             Map<String, Object> config = yaml.load(in);
-            hostname = (String) config.getOrDefault("unit.hostname", "myself");
+            hostname = (String) config.getOrDefault("unit-hostname", "myself");
             proxyConfig = new ProxyConfig();
-            proxyConfig.ip = (String) config.getOrDefault("proxy.ip", "localhost");
-            proxyConfig.port = (int) config.getOrDefault("proxy.port", 8080);
+            proxyConfig.ip = (String) config.getOrDefault("proxy-ip", "1.94.56.249");
+            proxyConfig.port = (int) config.getOrDefault("proxy-port", 8080);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

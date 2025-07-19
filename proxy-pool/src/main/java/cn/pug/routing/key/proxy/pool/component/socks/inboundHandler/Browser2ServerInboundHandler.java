@@ -15,8 +15,7 @@ public class Browser2ServerInboundHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.trace("开始写回客户端");
-        toClientCtx.writeAndFlush(msg);
+        toClientCtx.channel().writeAndFlush(msg);
     }
 
     @Override

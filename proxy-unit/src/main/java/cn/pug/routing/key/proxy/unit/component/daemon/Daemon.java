@@ -1,6 +1,9 @@
 package cn.pug.routing.key.proxy.unit.component.daemon;
 
-import cn.pug.common.handler.ExceptionHandler;
+import cn.pug.common.protocol.RegisterRequestEncoder;
+import cn.pug.common.protocol.RegisterResponseEncoder;
+import cn.pug.common.protocol.RoutingKeyDecoder;
+import cn.pug.common.protocol.parser.RegisterParser;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -8,22 +11,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Daemon {
     private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    private EventLoopGroup proxyGroup = new NioEventLoopGroup();
+    public EventLoopGroup proxyGroup = new NioEventLoopGroup();
     private Bootstrap bootstrap = new Bootstrap();
-    private UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
-
-    public Daemon() {
-
-    }
+    public UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
+    public int socksPort;
 
     public void start() {
         try {
@@ -34,22 +30,19 @@ public class Daemon {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline()
-                                    .addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()))
-                                    .addLast(new StringDecoder())
-                                    .addLast(new StringEncoder())
-                                    // 发送注册服务报文
-                                    .addLast(new TcpHandshakeInboundHandler(proxyGroup))
-                                    .addLast(new ExceptionHandler());
+                                    .addLast(new RoutingKeyDecoder())
+                                    .addLast(new RegisterRequestEncoder())
+                                    .addLast(new RegisterInboundHandler(Daemon.this));
                         }
                     });
             Channel channel = this.bootstrap.connect(unitConfig.proxyConfig.ip, unitConfig.proxyConfig.port).sync().channel();
             // 发送注册信息
-            channel.writeAndFlush(unitConfig.hostname+"\r\n").addListener(
+            channel.writeAndFlush("").addListener(
                     future -> {
                         if (future.isSuccess()) {
-                            log.info("注册服务成功!");
+                            log.info("发送注册请求成功");
                         } else {
-                            log.error("注册服务失败");
+                            log.error("发送注册请求失败");
                         }
                     }
             );

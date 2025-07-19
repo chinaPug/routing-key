@@ -1,6 +1,4 @@
-proxy:
-  ip: "localhost"
-  port: 8080
-unit:
-  hostname: "localhost"
+proxy-ip: "1.94.56.249"
+proxy-port: 8080
+unit-hostname: "3-star-phone"
 

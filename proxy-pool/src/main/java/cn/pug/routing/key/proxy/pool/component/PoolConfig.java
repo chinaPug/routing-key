@@ -14,11 +14,11 @@ public class PoolConfig {
         Yaml yaml = new Yaml();
         try (InputStream in = PoolConfig.class.getResourceAsStream("/routing-key.yml")) {
             Map<String, Object> config = yaml.load(in);
-            ip = (String) config.getOrDefault("proxy.ip", "127.0.0.1");
-            proxyPort = (int) config.getOrDefault("proxy.port", 8080);
+            ip = (String) config.getOrDefault("proxy-ip", "127.0.0.1");
+            proxyPort = (int) config.getOrDefault("proxy-port", 8080);
             servletConfig = new ServletConfig();
-            servletConfig.port = (int) config.getOrDefault("servlet.port", 8085);
-            servletConfig.path = (String) config.getOrDefault("servlet.path", "/available");
+            servletConfig.port = (int) config.getOrDefault("servlet-port", 8085);
+            servletConfig.path = (String) config.getOrDefault("servlet-path", "/available");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

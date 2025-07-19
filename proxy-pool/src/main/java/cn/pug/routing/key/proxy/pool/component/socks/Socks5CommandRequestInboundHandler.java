@@ -1,7 +1,10 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
 import cn.pug.common.handler.ExceptionHandler;
+import cn.pug.common.protocol.RoutingKeyDecoder;
 import cn.pug.common.protocol.RoutingKeyProtocol;
+import cn.pug.common.protocol.parser.RoutingParser;
+import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -9,8 +12,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
-import io.netty.handler.codec.socksx.v5.Socks5CommandType;
+import io.netty.handler.codec.socksx.v5.*;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.ReferenceCountUtil;
@@ -32,7 +34,6 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
     @Override
     @SneakyThrows
     protected void channelRead0(ChannelHandlerContext toBrowserCtx, DefaultSocks5CommandRequest msg) {
-
         // 检查请求类型是否为CONNECT，如果不是，则记录日志并继续处理其他读取事件
         if (!msg.type().equals(Socks5CommandType.CONNECT)) {
             log.info("接收commandRequest类型【{}】，非CONNECT类型，终止连接", msg.type());
@@ -41,44 +42,26 @@ public class Socks5CommandRequestInboundHandler extends SimpleChannelInboundHand
             return;
         }
 
-        // 准备连接目标服务器，记录调试日志
-        log.debug("准备连接目标服务器，ip={},port={}", msg.dstAddr(), msg.dstPort());
         // 发送这个当前浏览器的请求报文到tcp服务器
-        //启动监听
-        new ServerBootstrap()
-                .group( new NioEventLoopGroup(2))
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline()
-                                .addLast(new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()))
-                                .addLast(new StringDecoder())
-                                .addLast(new StringEncoder())
-                                .addLast(new WaitInboundHandler(socks5))
-                                .addLast(new ExceptionHandler());
-                    }
-                }).bind(0)
-                .addListener((ChannelFutureListener)future0 -> {
-                    if (future0.isSuccess()) {
-                        // 通过与客户端daemon的tcp通道发送连接请求，有浏览器请求代理的目标地址和本次需要客户端主动连接的端口
-                        int port = ((InetSocketAddress) future0.channel().localAddress()).getPort();
-                        socks5.getToClientDaemonChannel().writeAndFlush(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port + "\r\n").addListener(future1 -> {
-                            if (future1.isSuccess()) {
-                                log.info("已成功向客户端发送代理转发请求");
-                                // 等待客户端回传与目标服务器连接成功的信息
-                                socks5.des2toBrowserCtxMap.put(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port, toBrowserCtx);
-                                // 放入SOCKS5命令请求的目的地址类型
-                                socks5.des2toSocks5AddressTypeMap.put(msg.dstAddr() + RoutingKeyProtocol.SEGMENT_SPLIT + msg.dstPort() + RoutingKeyProtocol.SEGMENT_SPLIT + port, msg.dstAddrType());
-                            } else {
-                                log.error("连接目标服务器失败,address={},port={}", msg.dstAddr(), msg.dstPort());
-                            }
-                        });
-                    } else {
-                        log.error("client proxy绑定端口失败");
-                    }
-                });
-        log.info("client proxy启动成功");
+        log.info("接收commandRequest:目标ip【{}】，目标port【{}】",msg.dstAddr(), msg.dstPort());
+        RoutingParser.RoutingPacket routingPacket = new RoutingParser.RoutingPacket(msg.dstAddr(), msg.dstPort());
+        socks5.toClientDaemon.channel().writeAndFlush(routingPacket).addListener(future -> {
+            if (future.isSuccess()){
+                log.info("通知unit转发消息发送成功:【{}】",routingPacket);
+                // 失败则直接返回给浏览器
+                SocksPacketKeeper socksPacketKeeper=new SocksPacketKeeper(routingPacket, toBrowserCtx, msg.dstAddrType());
+                // 把浏览器的信息放入map中，方便后续使用
+                socks5.socksPacketKeeperConcurrentHashMap.put(socksPacketKeeper.getKey(),socksPacketKeeper);
+                ChannelPipeline pipeline = toBrowserCtx.pipeline();
+                // 移除握手相关的内容，只保留一个无处理器的tcp连接
+                pipeline.remove(Socks5CommandRequestInboundHandler.class);
+            }else {
+                log.info("通知unit转发消息发送失败");
+                // 失败则直接返回给浏览器
+                DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, msg.dstAddrType());
+                toBrowserCtx.writeAndFlush(commandResponse);
+            }
+        });
     }
 
 }

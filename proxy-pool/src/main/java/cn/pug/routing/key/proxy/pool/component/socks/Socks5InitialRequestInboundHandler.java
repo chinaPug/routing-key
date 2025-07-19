@@ -33,5 +33,6 @@ public class Socks5InitialRequestInboundHandler extends SimpleChannelInboundHand
         // 移除当前处理器和解码器，为后续处理做准备
         ctx.pipeline().remove(this);
         ctx.pipeline().remove(Socks5InitialRequestDecoder.class);
+        log.info("初始化socks5链接完成");
     }
 }

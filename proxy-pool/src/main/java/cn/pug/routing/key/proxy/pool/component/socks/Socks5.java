@@ -1,8 +1,13 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
 import cn.pug.common.handler.ExceptionHandler;
+import cn.pug.common.protocol.RegisterResponseEncoder;
 import cn.pug.common.protocol.RoutingKeyProtocol;
+import cn.pug.common.protocol.RoutingRequestEncoder;
+import cn.pug.common.protocol.parser.RegisterParser;
 import cn.pug.routing.key.proxy.pool.component.ServerContext;
+import cn.pug.routing.key.proxy.pool.component.daemon.UnitRegisterInbounderHandler;
+import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,19 +31,17 @@ public class Socks5 {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ServerBootstrap browserProxyServerBootstrap;
-    private int browserProxyPort;
+    private int browserProxyPort=9000;
     // 目标地址到ChannelHandlerContext toBrowserCtx
-    public Map<String, ChannelHandlerContext> des2toBrowserCtxMap = new ConcurrentHashMap<>(32);
-    // 目标地址到Socks5AddressType
-    public Map<String, Socks5AddressType> des2toSocks5AddressTypeMap = new ConcurrentHashMap<>(32);
+    public Map<String, SocksPacketKeeper> socksPacketKeeperConcurrentHashMap = new ConcurrentHashMap<>(32);
 
-    private Channel toClientDaemonChannel;
+    public ChannelHandlerContext toClientDaemon;
 
-    public Socks5(Channel toClientDaemonChannel) {
+    public Socks5(ChannelHandlerContext toClientDaemon) {
         this.bossGroup = new NioEventLoopGroup(1);
         this.workerGroup = new NioEventLoopGroup();
         this.browserProxyServerBootstrap = new ServerBootstrap();
-        this.toClientDaemonChannel = toClientDaemonChannel;
+        this.toClientDaemon = toClientDaemon;
     }
 
     public void start() {
@@ -54,30 +57,22 @@ public class Socks5 {
                             // 添加Socks协议解码编码器
                             ch.pipeline()
                                     // 添加Socks5编码器
-                                    .addLast(Socks5ServerEncoder.DEFAULT)
-                                    // 处理Socks5初始化请求
-                                    .addLast(new Socks5InitialRequestDecoder())
-                                    .addLast(new Socks5InitialRequestInboundHandler())
-                                    // 处理连接请求
-                                    .addLast(new Socks5CommandRequestDecoder())
-                                    .addLast(new Socks5CommandRequestInboundHandler(Socks5.this))
-                                    .addLast(new ExceptionHandler());
+                                    .addLast(new SplitFlowInboundHandler(Socks5.this));
                         }
-                    }).bind(0).sync()
+                    })
+                    .bind(browserProxyPort).sync()
                     .addListener((ChannelFutureListener) future0 -> {
                         // browser proxy服务端启动成功
                         if (future0.isSuccess()) {
-                            // 获取端口号
-                            this.browserProxyPort = ((InetSocketAddress) future0.channel().localAddress()).getPort();
                             log.info("Socks5代理服务启动成功，监听端口【{}】", this.browserProxyPort);
-                            // 获取browser proxy服务端坐标发送给客户端
-                            String localAddress = serverContext.getIp();
-                            String proxyInfo = localAddress + RoutingKeyProtocol.SEGMENT_SPLIT + this.browserProxyPort + "\r\n";
-                            log.info("browser proxy服务端启动成功，下一步发送元数据【{}】到客户端", proxyInfo);
-                            this.toClientDaemonChannel.writeAndFlush(proxyInfo).addListener((ChannelFutureListener) future1 -> {
+                            this.toClientDaemon.writeAndFlush(new RegisterParser.RegisterPacket(this.browserProxyPort,true)).addListener((ChannelFutureListener) future1 -> {
                                 if (future1.isSuccess()){
                                     // 在上下文中注册该代理
                                     serverContext.registrySocksProxy(this.browserProxyPort, this);
+                                    // 移除元数据编码器
+                                    toClientDaemon.pipeline().remove(RegisterResponseEncoder.class);
+                                    toClientDaemon.pipeline().remove(UnitRegisterInbounderHandler.class);
+                                    toClientDaemon.pipeline().addLast(new RoutingRequestEncoder());
                                 }else {
                                     // 说明此时与客户端的通道已经关闭，需要销毁该Socks对象
                                     log.error("向客户端发送元数据失败，销毁该通道");
@@ -101,6 +96,14 @@ public class Socks5 {
         }
     }
 
+    public void socksPacketKeeperConcurrentHashMapPrinter(){
+        log.info("socksPacketKeeperConcurrentHashMap监控输出--start");
+        log.info("socksPacketKeeperConcurrentHashMap size:{}",socksPacketKeeperConcurrentHashMap.size());
+        socksPacketKeeperConcurrentHashMap.forEach((key,value)->{
+            log.info("key:{},value:{}",key,value);
+        });
+        log.info("socksPacketKeeperConcurrentHashMap监控输出--end");
+    }
     public void shutdownGracefully() {
         // 关闭线程组
         log.info("正在停止代理服务...");

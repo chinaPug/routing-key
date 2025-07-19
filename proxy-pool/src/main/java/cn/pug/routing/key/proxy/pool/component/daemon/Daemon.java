@@ -1,10 +1,13 @@
 package cn.pug.routing.key.proxy.pool.component.daemon;
 
 
-import cn.pug.routing.key.proxy.pool.component.ServerContext;
+import cn.pug.common.protocol.RegisterResponseEncoder;
+import cn.pug.common.protocol.RoutingKeyDecoder;
+import cn.pug.common.protocol.RoutingRequestEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +33,15 @@ public class Daemon {
             this.bootstrap
                     .group(this.bossGroup, this.workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .childHandler(new DaemonChannelInitializer())
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) throws Exception {
+                            ch.pipeline()
+                                    .addLast(new RoutingKeyDecoder())
+                                    .addLast(new RegisterResponseEncoder())
+                                    .addLast(new UnitRegisterInbounderHandler());
+                        }
+                    })
                     .bind(this.port).sync().addListener(future -> {
                         if (future.isSuccess()) {
                             log.info("代理守护服务启动成功，监听端口【{}】", this.port);
