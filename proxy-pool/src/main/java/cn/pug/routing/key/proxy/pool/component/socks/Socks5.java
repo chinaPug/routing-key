@@ -1,26 +1,22 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
-import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RegisterResponseEncoder;
-import cn.pug.common.protocol.RoutingKeyProtocol;
 import cn.pug.common.protocol.RoutingRequestEncoder;
 import cn.pug.common.protocol.parser.RegisterParser;
 import cn.pug.routing.key.proxy.pool.component.ServerContext;
 import cn.pug.routing.key.proxy.pool.component.daemon.UnitRegisterInbounderHandler;
 import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.socksx.v5.Socks5AddressType;
-import io.netty.handler.codec.socksx.v5.Socks5CommandRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5InitialRequestDecoder;
-import io.netty.handler.codec.socksx.v5.Socks5ServerEncoder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

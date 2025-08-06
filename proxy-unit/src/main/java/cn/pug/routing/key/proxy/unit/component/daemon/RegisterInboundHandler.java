@@ -1,5 +1,6 @@
 package cn.pug.routing.key.proxy.unit.component.daemon;
 
+import cn.pug.common.protocol.RegisterRequestEncoder;
 import cn.pug.common.protocol.parser.RegisterParser;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -23,5 +24,19 @@ public class RegisterInboundHandler extends SimpleChannelInboundHandler<Register
         pipeline.remove(this);
         // 添加路由处理器
         pipeline.addLast(new RoutingInboundHandler(daemon));
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 发送注册信息
+        ctx.writeAndFlush(RegisterRequestEncoder.MSG).addListener(
+                future -> {
+                    if (future.isSuccess()) {
+                        log.info("发送注册请求成功");
+                    } else {
+                        log.error("发送注册请求失败");
+                    }
+                }
+        );
     }
 }

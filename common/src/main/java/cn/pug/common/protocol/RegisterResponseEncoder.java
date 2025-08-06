@@ -1,13 +1,11 @@
 package cn.pug.common.protocol;
 
 import cn.pug.common.protocol.parser.RegisterParser;
-import cn.pug.common.protocol.parser.RoutingParser;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
-import static cn.pug.common.protocol.RoutingKeyProtocol.State.REGISTER_REQUEST;
 import static cn.pug.common.protocol.RoutingKeyProtocol.State.REGISTER_RESPONSE;
 
 @Slf4j

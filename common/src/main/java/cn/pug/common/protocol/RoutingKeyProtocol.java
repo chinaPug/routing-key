@@ -2,8 +2,8 @@ package cn.pug.common.protocol;
 
 
 import cn.pug.common.protocol.parser.NullParser;
-import cn.pug.common.protocol.parser.RegisterParser;
 import cn.pug.common.protocol.parser.Parser;
+import cn.pug.common.protocol.parser.RegisterParser;
 import cn.pug.common.protocol.parser.RoutingParser;
 
 public class RoutingKeyProtocol {

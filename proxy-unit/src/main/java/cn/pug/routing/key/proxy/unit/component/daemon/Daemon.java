@@ -1,14 +1,12 @@
 package cn.pug.routing.key.proxy.unit.component.daemon;
 
 import cn.pug.common.protocol.RegisterRequestEncoder;
-import cn.pug.common.protocol.RegisterResponseEncoder;
 import cn.pug.common.protocol.RoutingKeyDecoder;
-import cn.pug.common.protocol.parser.RegisterParser;
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -30,22 +28,16 @@ public class Daemon {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline()
+                                    // routing key协议编码器
                                     .addLast(new RoutingKeyDecoder())
+                                    // 注册请求编码器
                                     .addLast(new RegisterRequestEncoder())
+                                    // 注册入站处理器
                                     .addLast(new RegisterInboundHandler(Daemon.this));
                         }
                     });
+            // 连接proxy pool
             Channel channel = this.bootstrap.connect(unitConfig.proxyConfig.ip, unitConfig.proxyConfig.port).sync().channel();
-            // 发送注册信息
-            channel.writeAndFlush("").addListener(
-                    future -> {
-                        if (future.isSuccess()) {
-                            log.info("发送注册请求成功");
-                        } else {
-                            log.error("发送注册请求失败");
-                        }
-                    }
-            );
             // 阻塞等待关闭
             channel.closeFuture().sync();
 

@@ -1,12 +1,9 @@
 package cn.pug.routing.key.proxy.pool.component.daemon;
 
-import cn.pug.common.protocol.RegisterResponseEncoder;
-import cn.pug.common.protocol.RoutingRequestEncoder;
 import cn.pug.common.protocol.parser.NullParser;
 import cn.pug.common.util.NetUtil;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 

@@ -1,6 +1,5 @@
 package cn.pug.common.protocol;
 
-import cn.pug.common.protocol.parser.RegisterParser;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -9,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import static cn.pug.common.protocol.RoutingKeyProtocol.State.REGISTER_REQUEST;
 @Slf4j
 public class RegisterRequestEncoder extends MessageToByteEncoder<Object> {
+    // 注册的没有数据报，所以这里写一个空字符串，仅做占位，不会发送
+    public static final String MSG="";
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object msg, ByteBuf out) throws Exception {

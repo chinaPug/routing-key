@@ -1,6 +1,5 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
-import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RoutingKeyDecoder;
 import cn.pug.common.protocol.RoutingKeyProtocol;
 import io.netty.buffer.ByteBuf;

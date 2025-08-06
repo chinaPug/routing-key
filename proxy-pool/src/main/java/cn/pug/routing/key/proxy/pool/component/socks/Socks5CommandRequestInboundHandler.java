@@ -1,25 +1,17 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
-import cn.pug.common.handler.ExceptionHandler;
-import cn.pug.common.protocol.RoutingKeyDecoder;
-import cn.pug.common.protocol.RoutingKeyProtocol;
 import cn.pug.common.protocol.parser.RoutingParser;
 import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.DelimiterBasedFrameDecoder;
-import io.netty.handler.codec.Delimiters;
-import io.netty.handler.codec.socksx.v5.*;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandRequest;
+import io.netty.handler.codec.socksx.v5.DefaultSocks5CommandResponse;
+import io.netty.handler.codec.socksx.v5.Socks5CommandStatus;
+import io.netty.handler.codec.socksx.v5.Socks5CommandType;
 import io.netty.util.ReferenceCountUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import java.net.InetSocketAddress;
 
 
 @Slf4j
