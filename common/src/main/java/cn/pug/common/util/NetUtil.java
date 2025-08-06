@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class NetUtil {
-    private static AtomicInteger usePort = new AtomicInteger(9000);
+    private static final AtomicInteger usePort = new AtomicInteger(9000);
     public static int getAvailablePort() {
         for (; ; ) {
             try (ServerSocket socket = new ServerSocket(usePort.get())) {

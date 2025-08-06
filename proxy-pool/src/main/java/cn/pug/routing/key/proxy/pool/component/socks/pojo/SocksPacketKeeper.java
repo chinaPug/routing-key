@@ -9,12 +9,12 @@ import lombok.ToString;
 @ToString
 public class SocksPacketKeeper {
     public RoutingParser.RoutingPacket routingPacket;
-    public ChannelHandlerContext toBrowserCtx;
+    public ChannelHandlerContext toClientCtx;
     public Socks5AddressType socks5AddressType;
 
-    public SocksPacketKeeper(RoutingParser.RoutingPacket routingPacket, ChannelHandlerContext toBrowserCtx, Socks5AddressType socks5AddressType) {
+    public SocksPacketKeeper(RoutingParser.RoutingPacket routingPacket, ChannelHandlerContext toClientCtx, Socks5AddressType socks5AddressType) {
         this.routingPacket=routingPacket;
-        this.toBrowserCtx = toBrowserCtx;
+        this.toClientCtx = toClientCtx;
         this.socks5AddressType = socks5AddressType;
     }
 

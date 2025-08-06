@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class RoutingParser implements Parser {
-    private static Set<RoutingKeyProtocol.State> supportState = new HashSet<>();
+    private static final Set<RoutingKeyProtocol.State> supportState = new HashSet<>();
 
     @Override
     public Set<RoutingKeyProtocol.State> support() {

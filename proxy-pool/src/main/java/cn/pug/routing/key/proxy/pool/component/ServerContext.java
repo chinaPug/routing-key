@@ -3,6 +3,7 @@ package cn.pug.routing.key.proxy.pool.component;
 import cn.pug.routing.key.proxy.pool.component.daemon.Daemon;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import com.alibaba.fastjson.JSON;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -22,11 +23,11 @@ import java.util.logging.LogManager;
 @Slf4j
 public class ServerContext {
     //配置类
-    private PoolConfig poolConfig = PoolConfig.PoolConfigHolder.INSTANCE.getPoolConfig();
+    private final PoolConfig poolConfig = PoolConfig.PoolConfigHolder.INSTANCE.getPoolConfig();
     // 守护进程
-    private Daemon daemon;
+    private final Daemon daemon;
     // Servlet
-    private Tomcat tomcat;
+    private final Tomcat tomcat;
     // 端口与socks5实例的映射
     private final Map<Integer, Socks5> port2SocksProxy = new ConcurrentHashMap<>(64);
 
@@ -88,9 +89,10 @@ public class ServerContext {
         }
     }
 
+    @Getter
     public enum ServerContextHolder {
         INSTANCE;
-        private ServerContext serverContext;
+        private final ServerContext serverContext;
 
         ServerContextHolder() {
             try {
@@ -100,8 +102,5 @@ public class ServerContext {
             }
         }
 
-        public ServerContext getServerContext() {
-            return serverContext;
-        }
     }
 }

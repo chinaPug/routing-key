@@ -1,5 +1,6 @@
 package cn.pug.routing.key.proxy.pool.component;
 
+import lombok.Getter;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
@@ -23,6 +24,7 @@ public class PoolConfig {
     }
 
     
+    @Getter
     public enum PoolConfigHolder {
         INSTANCE;
         private final PoolConfig poolConfig;
@@ -31,9 +33,6 @@ public class PoolConfig {
             poolConfig = new PoolConfig();
         }
 
-        public PoolConfig getPoolConfig() {
-            return poolConfig;
-        }
     }
 
     public static class ServletConfig {

@@ -1,15 +1,24 @@
 package cn.pug.routing.key.proxy.pool.component.daemon;
 
 
+import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RegisterResponseEncoder;
 import cn.pug.common.protocol.RoutingKeyDecoder;
+import cn.pug.routing.key.proxy.pool.component.socks.ConnectionStatisticsHandler;
+import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.net.SocketAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 // 1 该服务为daemon服务，在该业务逻辑单元会处理以下几件事：
 // 1.1 开放一个tcp端口，接收客户端连接，相当于服务注册请求的处理；
@@ -17,11 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 // 1.3 将创建的socks服务的端口号发送给客户端，并保存该端口号与客户端之间的映射关系，用于后续的连接转发
 // 到此为止，该daemon服务的任务完成，总结：负责处理客户端代理服务注册和分配本地代理服务相关信息
 @Slf4j
+@Getter
 public class Daemon {
     private final EventLoopGroup bossGroup = new NioEventLoopGroup();
     private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private final ServerBootstrap bootstrap = new ServerBootstrap();
     private final int port;
+    private final Map<SocketAddress, Socks5> proxyUnitMap=new ConcurrentHashMap<>();
 
     public Daemon(int port) {
         this.port = port;
@@ -39,7 +50,9 @@ public class Daemon {
                             ch.pipeline()
                                     .addLast(new RoutingKeyDecoder())
                                     .addLast(new RegisterResponseEncoder())
-                                    .addLast(new UnitRegisterInbounderHandler());
+                                    .addLast(new UnitRegisterInbounderHandler(Daemon.this))
+                                    .addFirst(new ConnectionStatisticsHandler(Daemon.this))
+                                    .addFirst(new ExceptionHandler());
                         }
                     })
                     .bind(this.port).sync().addListener(future -> {
@@ -56,7 +69,6 @@ public class Daemon {
         } catch (Exception e) {
             log.error("代理守护服务启动异常", e);
         } finally {
-            log.info("代理守护服务停止");
             this.shutdownGracefully();
         }
     }
@@ -64,8 +76,8 @@ public class Daemon {
     public void shutdownGracefully() {
         this.bossGroup.shutdownGracefully();
         this.workerGroup.shutdownGracefully();
-        // todo 守护进程要是挂了得做一些措施
         log.info("代理守护服务停止");
+        System.exit(-1);
     }
 }
 

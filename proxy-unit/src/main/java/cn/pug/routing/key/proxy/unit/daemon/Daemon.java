@@ -1,7 +1,9 @@
-package cn.pug.routing.key.proxy.unit.component.daemon;
+package cn.pug.routing.key.proxy.unit.daemon;
 
+import cn.pug.common.handler.ExceptionHandler;
 import cn.pug.common.protocol.RegisterRequestEncoder;
 import cn.pug.common.protocol.RoutingKeyDecoder;
+import cn.pug.routing.key.proxy.unit.config.UnitConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -9,15 +11,19 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Getter
 public class Daemon {
-    private EventLoopGroup bossGroup = new NioEventLoopGroup();
-    public EventLoopGroup proxyGroup = new NioEventLoopGroup();
-    private Bootstrap bootstrap = new Bootstrap();
-    public UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
-    public int socksPort;
+    private final EventLoopGroup bossGroup = new NioEventLoopGroup();
+    private final EventLoopGroup proxyGroup = new NioEventLoopGroup();
+    private final Bootstrap bootstrap = new Bootstrap();
+    private final UnitConfig unitConfig= UnitConfig.UnitConfigHolder.INSTANCE.getUnitConfig();
+    @Setter
+    private int socksPort;
 
     public void start() {
         try {
@@ -33,11 +39,13 @@ public class Daemon {
                                     // 注册请求编码器
                                     .addLast(new RegisterRequestEncoder())
                                     // 注册入站处理器
-                                    .addLast(new RegisterInboundHandler(Daemon.this));
+                                    .addLast(new RegisterInboundHandler(Daemon.this))
+                                    // 添加异常处理
+                                    .addFirst(new ExceptionHandler());
                         }
                     });
             // 连接proxy pool
-            Channel channel = this.bootstrap.connect(unitConfig.proxyConfig.ip, unitConfig.proxyConfig.port).sync().channel();
+            Channel channel = this.bootstrap.connect(unitConfig.getProxyConfig().getIp(), unitConfig.getProxyConfig().getPort()).sync().channel();
             // 阻塞等待关闭
             channel.closeFuture().sync();
 

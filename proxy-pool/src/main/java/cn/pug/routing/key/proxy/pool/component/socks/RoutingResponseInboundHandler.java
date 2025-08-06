@@ -1,9 +1,8 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
+import cn.pug.common.handler.P2PInboundHandler;
 import cn.pug.common.protocol.RoutingKeyDecoder;
 import cn.pug.common.protocol.parser.RoutingParser;
-import cn.pug.routing.key.proxy.pool.component.socks.inboundHandler.Browser2ServerInboundHandler;
-import cn.pug.routing.key.proxy.pool.component.socks.inboundHandler.Unit2ServerInboundHandler;
 import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -29,17 +28,18 @@ public class RoutingResponseInboundHandler extends SimpleChannelInboundHandler<R
             toUnitCtx.pipeline().remove(RoutingKeyDecoder.class);
             toUnitCtx.pipeline().remove(this);
             // 添加转发处理器
-            toUnitCtx.pipeline().addLast(new Unit2ServerInboundHandler(socksPacketKeeper.toBrowserCtx));
-            socksPacketKeeper.toBrowserCtx.pipeline().addLast(new Browser2ServerInboundHandler(toUnitCtx));
-            //转发成功 Client2ServerInboundHandler Browser2ServerInboundHandler
+            toUnitCtx.pipeline()
+                    .addLast(new P2PInboundHandler(socksPacketKeeper.toClientCtx.channel()));
+            socksPacketKeeper.toClientCtx.pipeline().addLast(new P2PInboundHandler(toUnitCtx.channel()));
+            //转发成功 Client2ServerInboundHandler Client2ServerInboundHandler
             DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.SUCCESS, socksPacketKeeper.socks5AddressType);
-            socksPacketKeeper.toBrowserCtx.channel().writeAndFlush(commandResponse);
-//            socksPacketKeeper.toBrowserCtx.pipeline().remove(Socks5CommandRequestDecoder.class);
+            socksPacketKeeper.toClientCtx.channel().writeAndFlush(commandResponse);
+//            socksPacketKeeper.toClientCtx.pipeline().remove(Socks5CommandRequestDecoder.class);
         } else {
             log.info("unit 连接目标地址失败");
             //转发失败
             DefaultSocks5CommandResponse commandResponse = new DefaultSocks5CommandResponse(Socks5CommandStatus.FAILURE, socksPacketKeeper.socks5AddressType);
-            socksPacketKeeper.toBrowserCtx.channel().writeAndFlush(commandResponse);
+            socksPacketKeeper.toClientCtx.channel().writeAndFlush(commandResponse);
         }
     }
 }

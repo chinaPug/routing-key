@@ -1,13 +1,15 @@
-package cn.pug.routing.key.proxy.unit.component.daemon;
+package cn.pug.routing.key.proxy.unit.config;
 
+import lombok.Getter;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
 import java.util.Map;
 
+@Getter
 public class UnitConfig {
-    String hostname;
-    ProxyConfig proxyConfig;
+    private final String hostname;
+    private final ProxyConfig proxyConfig;
     {
         Yaml yaml = new Yaml();
         try (InputStream in = UnitConfig.class.getResourceAsStream("/routing-key.yml")) {
@@ -22,6 +24,7 @@ public class UnitConfig {
     }
 
     
+    @Getter
     public enum UnitConfigHolder {
         INSTANCE;
         private final UnitConfig unitConfig;
@@ -30,14 +33,11 @@ public class UnitConfig {
             unitConfig = new UnitConfig();
         }
 
-        public UnitConfig getUnitConfig() {
-            return unitConfig;
-        }
     }
-
+    @Getter
     public static class ProxyConfig{
-        String ip;
-        int port;
+        private String ip;
+        private int port;
     }
 
 }
