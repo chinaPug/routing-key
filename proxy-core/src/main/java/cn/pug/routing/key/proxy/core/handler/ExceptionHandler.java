@@ -1,4 +1,4 @@
-package cn.pug.common.handler;
+package cn.pug.routing.key.proxy.core.handler;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;

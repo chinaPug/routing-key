@@ -1,6 +1,6 @@
 package cn.pug.routing.key.proxy.pool.component.socks.handler;
 
-import cn.pug.common.protocol.decoder.parser.RoutingParser;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RoutingParser;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.channel.ChannelHandlerContext;

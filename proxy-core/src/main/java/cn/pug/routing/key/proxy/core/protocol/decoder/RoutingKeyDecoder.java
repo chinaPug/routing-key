@@ -1,6 +1,6 @@
-package cn.pug.common.protocol.decoder;
+package cn.pug.routing.key.proxy.core.protocol.decoder;
 
-import cn.pug.common.protocol.RoutingKeyProtocol;
+import cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;

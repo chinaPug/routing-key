@@ -1,7 +1,7 @@
 package cn.pug.routing.key.proxy.pool.component.socks.handler;
 
-import cn.pug.common.protocol.decoder.RoutingKeyDecoder;
-import cn.pug.common.protocol.RoutingKeyProtocol;
+import cn.pug.routing.key.proxy.core.protocol.decoder.RoutingKeyDecoder;
+import cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

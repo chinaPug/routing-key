@@ -1,7 +1,7 @@
 package cn.pug.routing.key.proxy.pool.component.daemon.handler;
 
-import cn.pug.common.protocol.decoder.parser.RegisterRequestParser;
-import cn.pug.common.util.NetUtil;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterRequestParser;
+import cn.pug.routing.key.proxy.core.util.NetUtil;
 import cn.pug.routing.key.proxy.pool.component.daemon.Daemon;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import io.netty.channel.ChannelHandlerContext;

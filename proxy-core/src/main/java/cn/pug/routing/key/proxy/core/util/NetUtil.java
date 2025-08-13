@@ -1,4 +1,4 @@
-package cn.pug.common.util;
+package cn.pug.routing.key.proxy.core.util;
 
 import lombok.extern.slf4j.Slf4j;
 

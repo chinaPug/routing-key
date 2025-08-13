@@ -1,13 +1,13 @@
-package cn.pug.common.protocol.encoder;
+package cn.pug.routing.key.proxy.core.protocol.encoder;
 
-import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
+import cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterResponseParser;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
-import static cn.pug.common.protocol.RoutingKeyProtocol.State.REGISTER_RESPONSE;
+import static cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol.State.REGISTER_RESPONSE;
 
 /**
  * 注册响应编码器

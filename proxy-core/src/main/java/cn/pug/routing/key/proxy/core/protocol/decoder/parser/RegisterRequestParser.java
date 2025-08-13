@@ -1,7 +1,7 @@
-package cn.pug.common.protocol.decoder.parser;
+package cn.pug.routing.key.proxy.core.protocol.decoder.parser;
 
-import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.common.protocol.decoder.Parser;
+import cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol;
+import cn.pug.routing.key.proxy.core.protocol.decoder.Parser;
 import io.netty.buffer.ByteBuf;
 
 import java.util.HashSet;

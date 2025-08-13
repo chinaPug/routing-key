@@ -1,10 +1,10 @@
-package cn.pug.common.protocol;
+package cn.pug.routing.key.proxy.core.protocol;
 
 
-import cn.pug.common.protocol.decoder.parser.RegisterRequestParser;
-import cn.pug.common.protocol.decoder.Parser;
-import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
-import cn.pug.common.protocol.decoder.parser.RoutingParser;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterRequestParser;
+import cn.pug.routing.key.proxy.core.protocol.decoder.Parser;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterResponseParser;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RoutingParser;
 
 /**
  * routing key协议

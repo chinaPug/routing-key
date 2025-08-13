@@ -1,7 +1,7 @@
 package cn.pug.routing.key.proxy.unit.daemon;
 
-import cn.pug.common.protocol.encoder.RegisterRequestEncoder;
-import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
+import cn.pug.routing.key.proxy.core.protocol.encoder.RegisterRequestEncoder;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterResponseParser;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;

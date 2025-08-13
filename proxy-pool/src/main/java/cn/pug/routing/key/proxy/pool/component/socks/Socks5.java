@@ -1,9 +1,9 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
-import cn.pug.common.handler.ExceptionHandler;
-import cn.pug.common.protocol.encoder.RegisterResponseEncoder;
-import cn.pug.common.protocol.encoder.RoutingRequestEncoder;
-import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
+import cn.pug.routing.key.proxy.core.handler.ExceptionHandler;
+import cn.pug.routing.key.proxy.core.protocol.encoder.RegisterResponseEncoder;
+import cn.pug.routing.key.proxy.core.protocol.encoder.RoutingRequestEncoder;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RegisterResponseParser;
 import cn.pug.routing.key.proxy.pool.component.ServerContext;
 import cn.pug.routing.key.proxy.pool.component.daemon.Daemon;
 import cn.pug.routing.key.proxy.pool.component.daemon.handler.UnitRegisterInbounderHandler;

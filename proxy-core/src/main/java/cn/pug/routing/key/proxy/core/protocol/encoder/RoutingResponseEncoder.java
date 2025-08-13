@@ -1,29 +1,29 @@
-package cn.pug.common.protocol.encoder;
+package cn.pug.routing.key.proxy.core.protocol.encoder;
 
-import cn.pug.common.protocol.RoutingKeyProtocol;
-import cn.pug.common.protocol.decoder.parser.RoutingParser;
+import cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol;
+import cn.pug.routing.key.proxy.core.protocol.decoder.parser.RoutingParser;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
-import static cn.pug.common.protocol.RoutingKeyProtocol.State.ROUTING_REQUEST;
+import static cn.pug.routing.key.proxy.core.protocol.RoutingKeyProtocol.State.ROUTING_RESPONSE;
 
 /**
- * 路由请求编码器
+ * 注册响应编码器
  *
  * @author pug
  * @since 1.0.0
  */
 @Slf4j
-public class RoutingRequestEncoder extends MessageToByteEncoder<RoutingParser.RoutingPacket> {
+public class RoutingResponseEncoder extends MessageToByteEncoder<RoutingParser.RoutingPacket> {
     @Override
     protected void encode(ChannelHandlerContext ctx, RoutingParser.RoutingPacket routingPacket, ByteBuf out) throws Exception {
-        log.info("转发请求编码开始【{}】", routingPacket);
+        log.info("转发响应编码开始【{}】", routingPacket);
         // 写魔数
         out.writeByte(RoutingKeyProtocol.MAGIC_NUMBER);
         // 写类型
-        out.writeByte(ROUTING_REQUEST.type);
+        out.writeByte(ROUTING_RESPONSE.type);
         // 写可变长
         int ipVarLength = routingPacket.desIp.length();
         out.writeInt(ipVarLength);

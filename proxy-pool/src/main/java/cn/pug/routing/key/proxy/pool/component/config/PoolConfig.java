@@ -36,7 +36,7 @@ public class PoolConfig {
     }
 
     public static class ServletConfig {
-        int port;
-        String path;
+        public int port;
+        public String path;
     }
 }
