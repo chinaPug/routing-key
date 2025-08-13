@@ -19,7 +19,7 @@
     <dependencies>
         <dependency>
             <groupId>cn.pug</groupId>
-            <artifactId>common</artifactId>
+            <artifactId>proxy-core</artifactId>
             <version>1.0.0</version>
         </dependency>
         <dependency>

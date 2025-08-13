@@ -1,5 +1,6 @@
 package cn.pug.routing.key.proxy.pool.component;
 
+import cn.pug.routing.key.proxy.pool.component.config.PoolConfig;
 import cn.pug.routing.key.proxy.pool.component.daemon.Daemon;
 import cn.pug.routing.key.proxy.pool.component.socks.Socks5;
 import com.alibaba.fastjson.JSON;

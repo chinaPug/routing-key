@@ -1,12 +1,13 @@
 package cn.pug.routing.key.proxy.pool.component.socks;
 
 import cn.pug.common.handler.ExceptionHandler;
-import cn.pug.common.protocol.RegisterResponseEncoder;
-import cn.pug.common.protocol.RoutingRequestEncoder;
-import cn.pug.common.protocol.parser.RegisterParser;
+import cn.pug.common.protocol.encoder.RegisterResponseEncoder;
+import cn.pug.common.protocol.encoder.RoutingRequestEncoder;
+import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
 import cn.pug.routing.key.proxy.pool.component.ServerContext;
 import cn.pug.routing.key.proxy.pool.component.daemon.Daemon;
-import cn.pug.routing.key.proxy.pool.component.daemon.UnitRegisterInbounderHandler;
+import cn.pug.routing.key.proxy.pool.component.daemon.handler.UnitRegisterInbounderHandler;
+import cn.pug.routing.key.proxy.pool.component.socks.handler.SplitFlowInboundHandler;
 import cn.pug.routing.key.proxy.pool.component.socks.pojo.SocksPacketKeeper;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFutureListener;
@@ -66,7 +67,7 @@ public class Socks5 {
                         // client proxy服务端启动成功
                         if (future0.isSuccess()) {
                             log.info("Socks5代理服务启动成功，监听端口【{}】", this.clientProxyPort);
-                            this.toUnitDaemon.writeAndFlush(new RegisterParser.RegisterPacket(this.clientProxyPort, true)).addListener((ChannelFutureListener) future1 -> {
+                            this.toUnitDaemon.writeAndFlush(new RegisterResponseParser.RegisterPacket(this.clientProxyPort, true)).addListener((ChannelFutureListener) future1 -> {
                                 if (future1.isSuccess()) {
                                     // 在上下文中注册该代理
                                     serverContext.registrySocksProxy(this.clientProxyPort, this);

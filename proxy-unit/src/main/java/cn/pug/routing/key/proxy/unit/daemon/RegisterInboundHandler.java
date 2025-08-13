@@ -1,14 +1,14 @@
 package cn.pug.routing.key.proxy.unit.daemon;
 
-import cn.pug.common.protocol.RegisterRequestEncoder;
-import cn.pug.common.protocol.parser.RegisterParser;
+import cn.pug.common.protocol.encoder.RegisterRequestEncoder;
+import cn.pug.common.protocol.decoder.parser.RegisterResponseParser;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RegisterInboundHandler extends SimpleChannelInboundHandler<RegisterParser.RegisterPacket> {
+public class RegisterInboundHandler extends SimpleChannelInboundHandler<RegisterResponseParser.RegisterPacket> {
     private final Daemon daemon;
 
     public RegisterInboundHandler(Daemon daemon) {
@@ -16,7 +16,7 @@ public class RegisterInboundHandler extends SimpleChannelInboundHandler<Register
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, RegisterParser.RegisterPacket registerPacket) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RegisterResponseParser.RegisterPacket registerPacket) throws Exception {
         log.info("注册成功，proxy pool的端口为【{}】",registerPacket.socksPort);
         // 设定socksPort
         daemon.setSocksPort(registerPacket.socksPort);

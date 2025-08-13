@@ -1,6 +1,6 @@
 package cn.pug.routing.key.proxy.pool.component.socks.pojo;
 
-import cn.pug.common.protocol.parser.RoutingParser;
+import cn.pug.common.protocol.decoder.parser.RoutingParser;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.socksx.v5.Socks5AddressType;
 import lombok.ToString;

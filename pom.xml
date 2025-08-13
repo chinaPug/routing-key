@@ -11,7 +11,7 @@
     <modules>
         <module>proxy-unit</module>
         <module>proxy-pool</module>
-        <module>common</module>
+        <module>proxy-core</module>
     </modules>
 
     <properties>
