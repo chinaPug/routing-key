@@ -7,8 +7,6 @@ import cn.pug.common.protocol.parser.RegisterParser;
 import cn.pug.common.protocol.parser.RoutingParser;
 
 public class RoutingKeyProtocol {
-    // 段分隔符
-    public static final String SEGMENT_SPLIT = " ";
     // 魔数
     public static final int MAGIC_NUMBER = 0xFF&0x44;
 
