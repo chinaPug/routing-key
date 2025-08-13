@@ -30,30 +30,49 @@ public class Daemon {
             this.bootstrap
                     .group(this.bossGroup)
                     .channel(NioSocketChannel.class)
+                    .option(io.netty.channel.ChannelOption.SO_KEEPALIVE, true)
+                    .option(io.netty.channel.ChannelOption.TCP_NODELAY, true)
+                    .option(io.netty.channel.ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
                             ch.pipeline()
-                                    // routing key协议编码器
+                                    .addFirst(new ExceptionHandler())
                                     .addLast(new RoutingKeyDecoder())
-                                    // 注册请求编码器
                                     .addLast(new RegisterRequestEncoder())
-                                    // 注册入站处理器
-                                    .addLast(new RegisterInboundHandler(Daemon.this))
-                                    // 添加异常处理
-                                    .addFirst(new ExceptionHandler());
+                                    .addLast(new RegisterInboundHandler(Daemon.this));
                         }
                     });
+            
             // 连接proxy pool
-            Channel channel = this.bootstrap.connect(unitConfig.getProxyConfig().getIp(), unitConfig.getProxyConfig().getPort()).sync().channel();
+            log.info("正在连接到代理池: {}:{}", unitConfig.getProxyConfig().getIp(), unitConfig.getProxyConfig().getPort());
+            Channel channel = this.bootstrap.connect(unitConfig.getProxyConfig().getIp(), unitConfig.getProxyConfig().getPort())
+                    .sync().channel();
+            log.info("成功连接到代理池");
+            
             // 阻塞等待关闭
             channel.closeFuture().sync();
 
+        } catch (InterruptedException e) {
+            log.error("连接被中断", e);
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             log.error("客户端初始化服务启动异常", e);
         } finally {
-            this.bossGroup.shutdownGracefully();
-            this.proxyGroup.shutdownGracefully();
+            shutdownGracefully();
         }
+    }
+    
+    public void shutdownGracefully() {
+        log.info("开始关闭代理单元服务...");
+        
+        if (!this.bossGroup.isShutdown()) {
+            this.bossGroup.shutdownGracefully().syncUninterruptibly();
+        }
+        if (!this.proxyGroup.isShutdown()) {
+            this.proxyGroup.shutdownGracefully().syncUninterruptibly();
+        }
+        
+        log.info("代理单元服务已停止");
     }
 }

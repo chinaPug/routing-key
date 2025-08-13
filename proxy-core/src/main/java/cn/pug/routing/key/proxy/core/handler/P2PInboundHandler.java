@@ -3,6 +3,7 @@ package cn.pug.routing.key.proxy.core.handler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.util.ReferenceCountUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -17,24 +18,47 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class P2PInboundHandler extends ChannelInboundHandlerAdapter {
 
-    private final Channel channel;
+    private final Channel targetChannel;
 
-    public P2PInboundHandler(Channel channel) {
-        this.channel = channel;
+    public P2PInboundHandler(Channel targetChannel) {
+        if (targetChannel == null) {
+            throw new IllegalArgumentException("Target channel cannot be null");
+        }
+        this.targetChannel = targetChannel;
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        channel.writeAndFlush(msg);
+        if (targetChannel.isActive()) {
+            targetChannel.writeAndFlush(msg).addListener(future -> {
+                if (!future.isSuccess()) {
+                    log.warn("转发消息失败: {}", future.cause().getMessage());
+                    ReferenceCountUtil.release(msg); // 释放消息引用
+                    ctx.close();
+                }
+            });
+        } else {
+            log.debug("目标通道已关闭，释放消息");
+            ReferenceCountUtil.release(msg);
+            ctx.close();
+        }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        channel.close();
+        log.debug("源通道关闭，同时关闭目标通道");
+        if (targetChannel.isActive()) {
+            targetChannel.close();
+        }
+        super.channelInactive(ctx);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-
+        log.warn("P2P连接异常: {}", cause.getMessage());
+        ctx.close();
+        if (targetChannel.isActive()) {
+            targetChannel.close();
+        }
     }
 }
