@@ -456,6 +456,11 @@ java -Xmx512m -Xms256m -XX:+UseG1GC -jar proxy-unit-1.0.0.jar
 - 查看系统状态、节点列表、连接信息
 - 支持踢出节点、获取 Prometheus 指标
 
+### 8. 流量统计和限流（v1.4.0）
+- **TrafficManager**: 流量统计和速率限制
+- 防止单个节点占用过多资源
+- 支持入站/出站流量统计
+
 ### 配置示例
 ```yaml
 # proxy-pool 安全配置
