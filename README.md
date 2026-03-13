@@ -68,12 +68,13 @@ graph TB
 - `RoutingKeyDecoder`: 协议解码器，解析接收到的字节流
 - `Parser 接口`: 报文解析器接口
   - `RegisterRequestParser`: 注册请求解析器
-  - `RegisterResponseParser`: 注册响应解析器  
+  - `RegisterResponseParser`: 注册响应解析器
   - `RoutingParser`: 路由请求/响应解析器
 - `Encoder`: 各类型报文编码器
 - `P2PInboundHandler`: 点对点通信处理器
 - `ExceptionHandler`: 异常处理器
 - `NetUtil`: 网络工具类
+- **HeartbeatHandler**: 心跳检测处理器（新增）- 自动检测连接存活状态
 
 ### 2. proxy-pool (代理池模块)
 
@@ -94,6 +95,7 @@ graph TB
 - `RoutingResponseInboundHandler`: 路由响应处理器
 - `ConnectionStatisticsHandler`: 连接统计处理器
 - `ServerContext`: 服务器上下文，管理所有代理实例
+- **NodeAuthManager**: 节点认证管理器（新增）- 防止恶意节点注册，支持 Token 认证
 
 **配置文件** (`routing-key.yml`):
 ```yaml
@@ -409,9 +411,43 @@ java -Xmx512m -Xms256m -XX:+UseG1GC -jar proxy-unit-1.0.0.jar
 2. **访问控制**: 
    - 设置适当的防火墙规则
    - 使用非标准端口增加安全性
-   - 考虑添加认证机制
+   - **启用节点认证**（新增）- 配置 `auth.enabled: true` 和 `auth.secret-key`
 
 3. **监控和审计**:
    - 监控异常连接和流量模式
    - 记录关键操作日志
    - 设置资源使用告警
+
+## 新增功能 (v1.1.0)
+
+### 1. 心跳检测机制
+- **HeartbeatHandler**: 自动检测连接存活状态
+- 配置: `heartbeat.enabled: true`, `heartbeat.interval: 30`
+- 超过3次心跳失败自动断开连接
+
+### 2. 节点认证机制
+- **NodeAuthManager**: 基于 HMAC-SHA256 的 Token 认证
+- 防止恶意节点注册
+- 支持白名单机制
+- Token 1小时自动过期
+
+### 3. 单元测试
+- 添加核心模块单元测试
+- 使用 JUnit 5 测试框架
+- 覆盖协议编解码、认证逻辑
+
+### 配置示例
+```yaml
+# proxy-pool 安全配置
+auth:
+  enabled: true
+  secret-key: "your-secret-key-here"
+  whitelist:
+    - "node-1"
+    - "node-2"
+
+heartbeat:
+  enabled: true
+  interval: 30  # 秒
+  max-missed: 3
+```
