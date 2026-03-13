@@ -436,6 +436,21 @@ java -Xmx512m -Xms256m -XX:+UseG1GC -jar proxy-unit-1.0.0.jar
 - 使用 JUnit 5 测试框架
 - 覆盖协议编解码、认证逻辑
 
+### 4. 负载均衡（v1.2.0）
+- **LoadBalancer**: 支持多种负载均衡策略
+- 轮询、随机、最少连接、加权
+- 自动剔除不可用节点
+
+### 5. Prometheus 监控（v1.2.0）
+- **ProxyMetrics**: 完整的监控指标
+- 连接数、流量、延迟统计
+- 支持 Prometheus 抓取
+
+### 6. 连接池优化（v1.2.0）
+- **ConnectionPool**: 连接复用管理
+- 空闲连接自动清理
+- 连接耗尽保护
+
 ### 配置示例
 ```yaml
 # proxy-pool 安全配置
