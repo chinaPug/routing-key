@@ -451,6 +451,11 @@ java -Xmx512m -Xms256m -XX:+UseG1GC -jar proxy-unit-1.0.0.jar
 - 空闲连接自动清理
 - 连接耗尽保护
 
+### 7. Web 管理 API（v1.3.0）
+- **ManagementApiServlet**: RESTful 管理接口
+- 查看系统状态、节点列表、连接信息
+- 支持踢出节点、获取 Prometheus 指标
+
 ### 配置示例
 ```yaml
 # proxy-pool 安全配置
